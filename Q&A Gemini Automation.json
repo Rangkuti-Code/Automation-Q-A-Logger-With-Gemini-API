@@ -1,0 +1,160 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "b76ccb38-32cf-4bf3-8b21-700a4650e80d",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "59f2dba6-55c3-4e35-b465-df2c9621c462",
+      "name": "Webhook",
+      "webhookId": "b76ccb38-32cf-4bf3-8b21-700a4650e80d"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=[YOUR API KEY]",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"contents\": [\n      {\n        \"parts\": [\n          {\n            \"text\": \"{{ $json[\"body\"][\"question\"] }}\"\n          }\n        ]\n      }\n    ]\n  }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "d2e67822-b1fd-4167-adbe-e86491576c29",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "[YOUR_SPREADSHEET_ID]",
+          "mode": "list",
+          "cachedResultName": "Qa_Gemini",
+          "cachedResultUrl": "[YOUR_SPREADSHEET_URL]"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "[YOUR_SPREADSHEET_URL]#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Pertanyaan": "={{$node[\"Webhook\"].json[\"body\"][\"question\"]}}\n",
+            "Jawaban": "={{$node[\"HTTP Request\"].json[\"candidates\"][0][\"content\"][\"parts\"][0][\"text\"]}}",
+            "TimeStamp": "={{ new Date().toLocaleString(\"sv-SE\", { timeZone: \"Asia/Jakarta\" }).replace(\"T\", \" \") }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "TimeStamp",
+              "displayName": "TimeStamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Pertanyaan",
+              "displayName": "Pertanyaan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Jawaban",
+              "displayName": "Jawaban",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        440,
+        0
+      ],
+      "id": "ebc6ed07-3720-4713-8192-73f5bdb1a1c5",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "nvbCmDfBN9ztzKij",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e0f34f89-29d7-40dc-9ccd-70743c45902d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7c7a364f80d848ddec56791e8a232f8741320868e913228cca0d6c9a2ccbb750"
+  },
+  "id": "1lMSfRWmv90IMnTk",
+  "tags": []
+}
